@@ -51,6 +51,10 @@
 #include "snes.h"
 #elif defined(SATURN)
 #include "saturn.h"
+#elif defined(NES)
+#include "nes.h"
+#elif defined(GENS)
+#include "genesis.h"
 #else
 #error "Undefined gamepad"
 #endif
@@ -162,10 +166,6 @@ int main(void) {
 
 		if (GAMEPAD_SELECT_ON) {
 			gamepad_state.select_btn = 1;
-		}
-
-		if (GAMEPAD_PS_ON) {
-			gamepad_state.ps_btn = 1;
 		}
 
 		usb_gamepad_send();
