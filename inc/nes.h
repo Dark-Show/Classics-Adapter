@@ -10,6 +10,7 @@
 
 uint8_t BUTTON = 0;
 uint8_t DPAD = 0;
+uint8_t VIRTUAL = 0;
 
 #define BUTTON_A        (1 << 0)
 #define BUTTON_B        (1 << 1)
@@ -21,20 +22,24 @@ uint8_t DPAD = 0;
 #define DPAD_LEFT       (1 << 2)
 #define DPAD_RIGHT      (1 << 3)
 
+#define VIRTUAL_REBOOT  (1 << 1)
+
 /**********************************************************
  * gamepad button defines
  */
 
 #define GAMEPAD_CIRCLE_ON	    (BUTTON & BUTTON_A)
 #define GAMEPAD_CROSS_ON	    (BUTTON & BUTTON_B)
-#define GAMEPAD_START_ON		(BUTTON & BUTTON_START)
+#define GAMEPAD_START_ON		  (BUTTON & BUTTON_START)
 #define GAMEPAD_SELECT_ON	    (BUTTON & BUTTON_SELECT)
+#define GAMEPAD_ALL_BUTTON_ON (BUTTON & 0x0F)
 
 #define GAMEPAD_UP_ON	        (DPAD & DPAD_UP)
-#define GAMEPAD_DOWN_ON	        (DPAD & DPAD_DOWN)
-#define GAMEPAD_LEFT_ON         (DPAD & DPAD_LEFT)
+#define GAMEPAD_DOWN_ON	      (DPAD & DPAD_DOWN)
+#define GAMEPAD_LEFT_ON       (DPAD & DPAD_LEFT)
 #define GAMEPAD_RIGHT_ON	    (DPAD & DPAD_RIGHT)
 
+#define GAMEPAD_REBOOT_ON     (VIRTUAL & VIRTUAL_REBOOT)
 
 #define GAMEPAD_TRIANGLE_ON     0
 #define GAMEPAD_SQUARE_ON       0
@@ -42,7 +47,6 @@ uint8_t DPAD = 0;
 #define GAMEPAD_R1_ON           0
 #define GAMEPAD_L2_ON           0
 #define GAMEPAD_R2_ON           0
-#define GAMEPAD_REBOOT_ON       0
 
 /**********************************************************
  * nes pinout
@@ -60,7 +64,7 @@ uint8_t DPAD = 0;
 
 /**********************************************************
  * initialize pins
- */ 
+ */
 
 void gamepad_init(void) {
     DDRB |= CLOCK;  // output
@@ -74,7 +78,7 @@ void gamepad_init(void) {
 
 /**********************************************************
  * read pins and set buttons masks
- */ 
+ */
 
 void gamepad_read(void) {
     // set latch low
@@ -93,7 +97,16 @@ void gamepad_read(void) {
 
     // set latch high
     PORTB |= LATCH;
+
+    // handle virtual buttons
+    // reboot   : select + start + A + B
+    VIRTUAL = 0;
+    if (GAMEPAD_ALL_BUTTON_ON) {
+      // reboot
+      VIRTUAL = VIRTUAL_REBOOT;
+      // eat buttons
+      BUTTON = 0;
+    }
 }
 
 #endif
-
