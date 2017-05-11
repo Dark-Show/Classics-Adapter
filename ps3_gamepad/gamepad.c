@@ -69,8 +69,8 @@ int main(void) {
 	// set for 16 MHz clock
 	CPU_PRESCALE(0);
 
-    // initialize gamepad
-    gamepad_init();
+  // initialize gamepad
+  gamepad_init();
 
 	LED_CONFIG;
 	LED_ON; // power up led on startup for 1 sec
@@ -171,4 +171,3 @@ int main(void) {
 		usb_gamepad_send();
 	}
 }
-
