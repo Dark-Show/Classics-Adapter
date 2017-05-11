@@ -55,8 +55,18 @@
 // You can change these to give your code its own name.
 //#define STR_MANUFACTURER	L"Slashdev"
 //#define STR_PRODUCT		L"PS3 Gamepad"
-#define STR_MANUFACTURER	L"SEGA"
-#define STR_PRODUCT		L"VIRTUA STICK High Grade"
+#define STR_MANUFACTURER	L"RetroTeensy"
+#if defined(SNES)
+#define STR_PRODUCT		L"SNES Controller"
+#elif defined(SATURN)
+#define STR_PRODUCT		L"SEGA SATURN Controller"
+#elif defined(NES)
+#define STR_PRODUCT		L"NES Controller"
+#elif defined(GENS)
+#define STR_PRODUCT		L"SEGA GENESIS Controller"
+#else
+#error "Undefined gamepad"
+#endif
 
 
 // Mac OS-X and Linux automatically load the correct drivers.  On
@@ -590,5 +600,3 @@ ISR(USB_COM_vect)
 	}
 	UECONX = (1<<STALLRQ) | (1<<EPEN);	// stall
 }
-
-
