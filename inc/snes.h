@@ -105,7 +105,7 @@ uint8_t VIRTUAL = 0;
 
 /**********************************************************
  * initialize pins
- */ 
+ */
 
 void gamepad_init(void) {
     DDRB |= CLOCK;  // output
@@ -119,7 +119,7 @@ void gamepad_init(void) {
 
 /**********************************************************
  * read pins and set buttons masks
- */ 
+ */
 
 void gamepad_read(void) {
     // set latch low
@@ -144,7 +144,7 @@ void gamepad_read(void) {
     PORTB |= LATCH;
 
     // handle virtual buttons
-    // ps       : select + start
+    // ps       : select + start + B
     // reboot   : select + start + l1 + r1
     // l2       : select + l1
     // r2       : select + r1
@@ -155,16 +155,15 @@ void gamepad_read(void) {
                 // reboot
                 VIRTUAL = VIRTUAL_REBOOT;
                 // eat buttons
+                BUTTON = 0;
+            } else if (GAMEPAD_CROSS_ON) {
+                // ps
+                VIRTUAL= VIRTUAL_PS;
+                // eat buttons
                 BUTTON &= ~BUTTON_L1;
                 BUTTON &= ~BUTTON_R1;
-            } else {
-                // ps
-                VIRTUAL = VIRTUAL_PS;
+                BUTTON &= ~BUTTON_B;
             }
-
-            // eat buttons
-            BUTTON &= ~BUTTON_START;
-            BUTTON &= ~BUTTON_SELECT;
         } else {
             if (GAMEPAD_L1_ON) {
                 // l2
@@ -185,4 +184,3 @@ void gamepad_read(void) {
 }
 
 #endif
-

@@ -10,6 +10,7 @@
 
 uint8_t BUTTON = 0;
 uint8_t DPAD = 0;
+uint8_t VIRTUAL = 0;
 
 #define BUTTON_A        (1 << 0)
 #define BUTTON_B        (1 << 1)
@@ -21,6 +22,8 @@ uint8_t DPAD = 0;
 #define DPAD_LEFT       (1 << 2)
 #define DPAD_RIGHT      (1 << 3)
 
+#define VIRTUAL_REBOOT  (1 << 1)
+
 /**********************************************************
  * gamepad button defines
  */
@@ -31,10 +34,11 @@ uint8_t DPAD = 0;
 #define GAMEPAD_SELECT_ON	    (BUTTON & BUTTON_SELECT)
 
 #define GAMEPAD_UP_ON	        (DPAD & DPAD_UP)
-#define GAMEPAD_DOWN_ON	        (DPAD & DPAD_DOWN)
-#define GAMEPAD_LEFT_ON         (DPAD & DPAD_LEFT)
+#define GAMEPAD_DOWN_ON	      (DPAD & DPAD_DOWN)
+#define GAMEPAD_LEFT_ON       (DPAD & DPAD_LEFT)
 #define GAMEPAD_RIGHT_ON	    (DPAD & DPAD_RIGHT)
 
+#define GAMEPAD_REBOOT_ON     (VIRTUAL & VIRTUAL_REBOOT)
 
 #define GAMEPAD_TRIANGLE_ON     0
 #define GAMEPAD_SQUARE_ON       0
@@ -42,15 +46,14 @@ uint8_t DPAD = 0;
 #define GAMEPAD_R1_ON           0
 #define GAMEPAD_L2_ON           0
 #define GAMEPAD_R2_ON           0
-#define GAMEPAD_REBOOT_ON       0
 
 /**********************************************************
  * nes pinout
  *
  * VCC (white)    --->    VCC
- * Clock (red) --->    PB0
- * Latch (orange) --->    PB1
- * Data (yellow)     --->    PB2
+ * Clock (red) --->    PD0
+ * Latch (orange) --->    PD1
+ * Data (yellow)     --->    PD2
  * GND (brown)    --->    GND
  */
 
@@ -60,40 +63,52 @@ uint8_t DPAD = 0;
 
 /**********************************************************
  * initialize pins
- */ 
+ */
 
 void gamepad_init(void) {
-    DDRB |= CLOCK;  // output
-    DDRB |= LATCH;  // output
-    DDRB &= ~DATA;  // input
+    DDRD |= CLOCK;  // output
+    DDRD |= LATCH;  // output
+    DDRD &= ~DATA;  // input
 
-    PORTB |= CLOCK; // high output
-    PORTB |= LATCH; // high output
-    PORTB &= ~DATA; // normal input
+    PORTD |= CLOCK; // high output
+    PORTD |= LATCH; // high output
+    PORTD &= ~DATA; // normal input
 }
 
 /**********************************************************
  * read pins and set buttons masks
- */ 
+ */
 
 void gamepad_read(void) {
     // set latch low
-    PORTB &= ~LATCH;
+    PORTD &= ~LATCH;
 
     // read data pin, low is a press                cycle clock for next button
-                                                    PORTB &= ~CLOCK; PORTB |= CLOCK;
-    BUTTON  = (PINB & DATA) ? 0 : BUTTON_A;         PORTB &= ~CLOCK; PORTB |= CLOCK;
-    BUTTON |= (PINB & DATA) ? 0 : BUTTON_B;         PORTB &= ~CLOCK; PORTB |= CLOCK;
-    BUTTON |= (PINB & DATA) ? 0 : BUTTON_SELECT;    PORTB &= ~CLOCK; PORTB |= CLOCK;
-    BUTTON |= (PINB & DATA) ? 0 : BUTTON_START;     PORTB &= ~CLOCK; PORTB |= CLOCK;
-    DPAD    = (PINB & DATA) ? 0 : DPAD_UP;          PORTB &= ~CLOCK; PORTB |= CLOCK;
-    DPAD   |= (PINB & DATA) ? 0 : DPAD_DOWN;        PORTB &= ~CLOCK; PORTB |= CLOCK;
-    DPAD   |= (PINB & DATA) ? 0 : DPAD_LEFT;        PORTB &= ~CLOCK; PORTB |= CLOCK;
-    DPAD   |= (PINB & DATA) ? 0 : DPAD_RIGHT;       // PORTB &= ~CLOCK; PORTB |= CLOCK;
+                                                    PORTD &= ~CLOCK; PORTD |= CLOCK;
+    BUTTON  = (PIND & DATA) ? 0 : BUTTON_A;         PORTD &= ~CLOCK; PORTD |= CLOCK;
+    BUTTON |= (PIND & DATA) ? 0 : BUTTON_B;         PORTD &= ~CLOCK; PORTD |= CLOCK;
+    BUTTON |= (PIND & DATA) ? 0 : BUTTON_SELECT;    PORTD &= ~CLOCK; PORTD |= CLOCK;
+    BUTTON |= (PIND & DATA) ? 0 : BUTTON_START;     PORTD &= ~CLOCK; PORTD |= CLOCK;
+    DPAD    = (PIND & DATA) ? 0 : DPAD_UP;          PORTD &= ~CLOCK; PORTD |= CLOCK;
+    DPAD   |= (PIND & DATA) ? 0 : DPAD_DOWN;        PORTD &= ~CLOCK; PORTD |= CLOCK;
+    DPAD   |= (PIND & DATA) ? 0 : DPAD_LEFT;        PORTD &= ~CLOCK; PORTD |= CLOCK;
+    DPAD   |= (PIND & DATA) ? 0 : DPAD_RIGHT;       // PORTD &= ~CLOCK; PORTD |= CLOCK;
 
     // set latch high
-    PORTB |= LATCH;
+    PORTD |= LATCH;
+
+    // handle virtual buttons
+    // reboot   : select + start + A + B
+	
+    VIRTUAL = 0;	
+	
+	// if all buttons pressed
+    if ((BUTTON & 0x0F) == 0x0F) {
+      // reboot
+      VIRTUAL = VIRTUAL_REBOOT;
+      // eat buttons
+      BUTTON = 0;
+    }
 }
 
 #endif
-
